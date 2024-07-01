@@ -1,2 +1,2 @@
 requests==2.31.0  # or the latest version
-selenium==4.22.2  # or the version compatible with your ChromeDriver
+selenium==4.22.0  # or the version compatible with your ChromeDriver
