@@ -1,0 +1,35 @@
+name: Schedule Instagram Bot
+
+on:
+  schedule:
+    # Run at 8:30 AM and 6:00 PM UTC (fixed times)
+    - cron: '30 8 * * *'  # Adjust this cron expression to your desired schedule
+    - cron: '30 22 * * *'  # Adjust this cron expression to your desired schedule
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'  # Adjust to your Python version
+
+      - name: Install dependencies
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Run the Instagram bot
+        env:
+          INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+          INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+        run: |
+          source venv/bin/activate
+          python instagram_post_bot.py
