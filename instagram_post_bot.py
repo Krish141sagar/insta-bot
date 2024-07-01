@@ -1,81 +1,72 @@
-import os
-import requests
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-import time
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+import requests
 import random
+import os
+import time
+from dotenv import load_dotenv
 
-# Get credentials from environment variables
-username = os.getenv('i_can_do_to_change')
-password = os.getenv('Krish$141')
-unsplash_access_key = os.getenv('AtiNcai83k5PAWXd02hOWYPhbghlWANA6GFsUhZGKBs')
+# Load environment variables
+load_dotenv()
 
-# List of motivational hashtags
-hashtags = [
-    "#Motivation", "#Inspiration", "#StayPositive", "#Believe", "#Success", 
-    "#PositiveVibes", "#DreamBig", "#KeepGoing", "#StayStrong", "#YouCanDoIt",
-    "#NeverGiveUp", "#WorkHard", "#GoalSetting", "#SelfImprovement", "#Mindset",
-    "#MotivationalQuotes", "#DailyInspiration", "#LifeGoals", "#PushYourLimits"
-]
+# Instagram credentials and Unsplash access key
+username = os.getenv('INSTAGRAM_USERNAME')
+password = os.getenv('INSTAGRAM_PASSWORD')
+unsplash_access_key = os.getenv('UNSPLASH_ACCESS_KEY')
 
-# Function to download a random motivational image from Unsplash
-def download_random_image():
-    url = f'https://api.unsplash.com/photos/random?query=motivational&client_id={unsplash_access_key}'
-    response = requests.get(url).json()
-    image_url = response['urls']['regular']
-    image_data = requests.get(image_url).content
+# Define hashtags
+hashtags = ["#motivation", "#inspiration", "#success", "#life", "#happy", "#mindset", "#believe", "#growth", "#positivity", "#goal"]
 
-    with open('motivational_image.jpg', 'wb') as handler:
-        handler.write(image_data)
+# Get a random motivational image from Unsplash
+def get_random_image():
+    response = requests.get(f'https://api.unsplash.com/photos/random?query=motivational&client_id={unsplash_access_key}')
+    data = response.json()
+    image_url = data[0]['urls']['regular']
+    return image_url
 
-    return 'motivational_image.jpg'
+# Download the image
+def download_image(image_url):
+    response = requests.get(image_url)
+    with open('motivation_image.jpg', 'wb') as file:
+        file.write(response.content)
 
-# Initialize the WebDriver
-driver = webdriver.Chrome(executable_path='/path/to/chromedriver')  # Make sure to provide the correct path
+# Instagram login and post image
+def post_to_instagram():
+    options = Options()
+    options.add_argument("--headless")  # Run in headless mode
+    service = Service('/path/to/chromedriver')  # Replace with the path to your chromedriver
+    driver = webdriver.Chrome(service=service, options=options)  # Updated initialization
 
-try:
-    # Random delay between -17 and +17 minutes (1020 seconds)
-    random_delay = random.randint(-1020, 1020)
-    time.sleep(random_delay)
+    driver.get('https://www.instagram.com/accounts/login/')
 
-    # Download a random motivational image
-    image_path = download_random_image()
+    time.sleep(5)
+    driver.find_element(By.NAME, 'username').send_keys(username)
+    driver.find_element(By.NAME, 'password').send_keys(password)
+    driver.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
 
-    # Open Instagram and log in
-    driver.get("https://www.instagram.com/accounts/login/")
-    time.sleep(5)  # Allow time for the page to load
+    time.sleep(5)
+    driver.get('https://www.instagram.com/create/style/')
 
-    # Find and fill the username and password fields
-    username_field = driver.find_element_by_name("username")
-    password_field = driver.find_element_by_name("password")
-    username_field.send_keys(username)
-    password_field.send_keys(password)
-    password_field.send_keys(Keys.RETURN)
-    
-    time.sleep(5)  # Allow time for the login process
+    time.sleep(5)
+    driver.find_element(By.CSS_SELECTOR, 'input[type="file"]').send_keys(os.path.abspath('motivation_image.jpg'))
 
-    # Navigate to the post upload page
-    driver.get("https://www.instagram.com/create/style/")
-    time.sleep(5)  # Allow time for the page to load
+    time.sleep(5)
+    caption = "Motivational Quote!\n" + " ".join(random.sample(hashtags, 5))
+    driver.find_element(By.CSS_SELECTOR, 'textarea[aria-label="Write a caption…"]').send_keys(caption)
 
-    # Upload the image
-    upload_input = driver.find_element_by_css_selector("input[type='file']")
-    upload_input.send_keys(os.path.abspath(image_path))
-    time.sleep(5)  # Allow time for the image to upload
+    time.sleep(2)
+    driver.find_element(By.CSS_SELECTOR, 'button[type="button"]').click()
 
-    # Enter the caption
-    caption = "Here's your daily dose of motivation! " + " ".join(hashtags)
-    caption_field = driver.find_element_by_css_selector("textarea[aria-label='Write a caption…']")
-    caption_field.send_keys(caption)
-
-    # Share the post
-    share_button = driver.find_element_by_xpath("//button[contains(text(),'Share')]")
-    share_button.click()
-
-    time.sleep(5)  # Allow time for the post to be shared
-
-finally:
-    # Close the WebDriver
+    time.sleep(5)
     driver.quit()
-    # Remove the downloaded image
-    os.remove(image_path)
+
+# Main function
+def main():
+    image_url = get_random_image()
+    download_image(image_url)
+    post_to_instagram()
+
+if __name__ == "__main__":
+    main()
