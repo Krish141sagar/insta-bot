@@ -2,9 +2,10 @@ name: Schedule Instagram Bot
 
 on:
   schedule:
-    # Run at 8:30 AM and 6:00 PM UTC (fixed times)
-    - cron: '30 8 * * *'
-    - cron: '00 23 * * *'
+    # Run at 8:30 AM IST (converted to UTC)
+    - cron: '0 3 * * *'  # 8:30 AM IST is 3:00 AM UTC
+    # Run at 11:14 PM IST (converted to UTC)
+    - cron: '44 17 * * *'  # 11:14 PM IST is 5:44 PM UTC
   workflow_dispatch:  # This allows you to manually trigger the workflow
 
 jobs:
@@ -26,11 +27,23 @@ jobs:
           source venv/bin/activate
           pip install -r requirements.txt  # Install dependencies from requirements.txt
 
-      - name: Run the Instagram bot
-        env:
-          INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
-          INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
-          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+      - name: Test Requests Installation
         run: |
           source venv/bin/activate
-          python instagram_post_bot.py
+          python -c "import requests; print(requests.__version__)"
+
+      - name: Set Timezone to IST
+        run: |
+          sudo ln -sf /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
+          sudo dpkg-reconfigure -f noninteractive tzdata
+          echo "Timezone set to:"
+          timedatectl | grep "Time zone"  # Show the timezone information
+
+      - name: Check Timezone and Current Time
+        run: |
+          echo "Checking current time in IST timezone..."
+          date  # Print the current date and time in the new timezone
+
+      - name: Run the Instagram bot
+        env:
+          INSTAGRAM_USERNAME: ${{ secrets.INSTAGR
