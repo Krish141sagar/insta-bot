@@ -5,6 +5,8 @@ on:
     # Run at 8:30 AM and 6:00 PM UTC (fixed times)
     - cron: '30 8 * * *'  # Adjust this cron expression to your desired schedule
     - cron: '30 22 * * *'  # Adjust this cron expression to your desired schedule
+  workflow_dispatch:  # This allows you to manually trigger the workflow
+
 
 jobs:
   run-bot:
