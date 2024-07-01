@@ -44,6 +44,4 @@ jobs:
           echo "Checking current time in IST timezone..."
           date  # Print the current date and time in the new timezone
 
-      - name: Run the Instagram bot
-        env:
-          INSTAGRAM_USERNAME: ${{ secrets.INSTAGR
+      - name: Run t
