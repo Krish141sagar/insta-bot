@@ -14,10 +14,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3  # Fixed version to the latest
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4  # Fixed version to the latest
         with:
           python-version: '3.x'
 
@@ -44,4 +44,11 @@ jobs:
           echo "Checking current time in IST timezone..."
           date  # Print the current date and time in the new timezone
 
-      - name: Run t
+      - name: Run the Instagram bot
+        env:
+          INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+          INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+        run: |
+          source venv/bin/activate
+          python instagram_post_bot.py
