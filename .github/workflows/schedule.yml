@@ -3,10 +3,9 @@ name: Schedule Instagram Bot
 on:
   schedule:
     # Run at 8:30 AM and 6:00 PM UTC (fixed times)
-    - cron: '30 8 * * *'  # Adjust this cron expression to your desired schedule
-    - cron: '45 22 * * *'  # Adjust this cron expression to your desired schedule
+    - cron: '30 8 * * *'
+    - cron: '50 22 * * *'
   workflow_dispatch:  # This allows you to manually trigger the workflow
-
 
 jobs:
   run-bot:
@@ -19,13 +18,13 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.x'  # Adjust to your Python version
+          python-version: '3.x'
 
       - name: Install dependencies
         run: |
           python -m venv venv
           source venv/bin/activate
-          pip install -r requirements.txt
+          pip install -r requirements.txt  # Install dependencies from requirements.txt
 
       - name: Run the Instagram bot
         env:
