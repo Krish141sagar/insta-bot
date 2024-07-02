@@ -22,7 +22,7 @@ hashtags = ["#motivation", "#inspiration", "#success", "#life", "#happy", "#mind
 # Get a random motivational image from Unsplash
 def get_random_image():
     try:
-        response = requests.get(f'https://api.unsplash.com/photos/random?client_id={unsplash_access_key}=motivational&orientation=landscape')
+        response = requests.get(f'https://api.unsplash.com/photos/random?client_id={unsplash_access_key}&query=motivational&orientation=landscape')
         response.raise_for_status()  # Check for HTTP errors
         data = response.json()
         if not data or 'urls' not in data[0]:
