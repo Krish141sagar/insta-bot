@@ -7,6 +7,12 @@ import random
 import os
 import time
 from dotenv import load_dotenv
+import logging
+
+# Configure logging
+logging.basicConfig(filename='bot.log', level=logging.INFO)
+
+
 
 # Load environment variables
 load_dotenv()
@@ -75,6 +81,11 @@ def post_to_instagram():
 
 # Main function
 def main():
+    logging.info('Bot started at %s', time.strftime('%Y-%m-%d %H:%M:%S'))
+    
+    # Your existing code...
+    
+    logging.info('Bot finished at %s', time.strftime('%Y-%m-%d %H:%M:%S'))
     try:
         image_url = get_random_image()
         download_image(image_url)
