@@ -5,7 +5,7 @@ on:
     # Run at 8:30 AM IST (converted to UTC)
     - cron: '0 3 * * *'  # 8:30 AM IST is 3:00 AM UTC
     # Run at 11:14 PM IST (converted to UTC)
-    - cron: '37 17 * * *'  # 11:45 PM IST is 06:15 PM UTC
+    - cron: '00 11 * * *'  # 11:45 PM IST is 06:15 PM UTC
   workflow_dispatch:  # This allows you to manually trigger the workflow
 
 jobs:
