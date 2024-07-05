@@ -1,10 +1,9 @@
 import os
 import requests
-import random
 import logging
 from dotenv import load_dotenv
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
@@ -47,7 +46,7 @@ def post_to_instagram(image_url, caption):
     chrome_options.add_argument("--disable-dev-shm-usage")
 
     try:
-        service = Service(executable_path=ChromeDriverManager().install())
+        service = ChromeService(executable_path=ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=chrome_options)
         driver.get("https://www.instagram.com/accounts/login/")
         logger.info("Opened Instagram login page")
