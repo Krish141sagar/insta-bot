@@ -1,54 +1,30 @@
-name: Schedule Instagram Bot
+name: Run Instagram Bot Manually
 
 on:
-  schedule:
-    # Run at 8:30 AM IST (converted to UTC)
-    - cron: '40 5 * * *'  # 8:30 AM IST is 3:00 AM UTC
-    # Run at 11:14 PM IST (converted to UTC)
-    - cron: '10 12 * * *'  # 11:45 PM IST is 06:15 PM UTC
-  workflow_dispatch:  # This allows you to manually trigger the workflow
+  workflow_dispatch:
 
 jobs:
-  run-bot:
+  test-bot:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3  # Fixed version to the latest
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v4  # Fixed version to the latest
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: '3.12'
 
       - name: Install dependencies
         run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r requirements.txt  # Install dependencies from requirements.txt
+          python -m pip install --upgrade pip
+          pip install requests selenium python-dotenv webdriver-manager
 
-      - name: Test Requests Installation
+      - name: Run Instagram Bot
         run: |
-          source venv/bin/activate
-          python -c "import requests; print(requests.__version__)"
-
-      - name: Set Timezone to IST
-        run: |
-          sudo ln -sf /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
-          sudo dpkg-reconfigure -f noninteractive tzdata
-          echo "Timezone set to:"
-          timedatectl | grep "Time zone"  # Show the timezone information
-
-      - name: Check Timezone and Current Time
-        run: |
-          echo "Checking current time in IST timezone..."
-          date  # Print the current date and time in the new timezone
-
-      - name: Run the Instagram bot
+          python instagram_post_bot.py
         env:
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
           INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
           INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
-          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
-        run: |
-          source venv/bin/activate
-          python instagram_post_bot.py
