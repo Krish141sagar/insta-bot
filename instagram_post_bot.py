@@ -6,6 +6,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime
 
@@ -60,25 +62,39 @@ def post_to_instagram(image_url, caption):
         logger.info("Opened Instagram login page")
         print("Opened Instagram login page.")
 
-        driver.find_element(By.NAME, 'username').send_keys(os.getenv('INSTAGRAM_USERNAME'))
+        wait = WebDriverWait(driver, 15)  # Wait up to 15 seconds for elements to appear
+
+        username_field = wait.until(EC.presence_of_element_located((By.NAME, 'username')))
+        username_field.send_keys(os.getenv('INSTAGRAM_USERNAME'))
         print(f"Entered username: {os.getenv('INSTAGRAM_USERNAME')}")
-        driver.find_element(By.NAME, 'password').send_keys(os.getenv('INSTAGRAM_PASSWORD'))
+
+        password_field = wait.until(EC.presence_of_element_located((By.NAME, 'password')))
+        password_field.send_keys(os.getenv('INSTAGRAM_PASSWORD'))
         print(f"Entered password: {os.getenv('INSTAGRAM_PASSWORD')}")
-        driver.find_element(By.XPATH, "//button[contains(text(), 'Log In')]").click()
+
+        login_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@type='submit']")))
+        login_button.click()
         logger.info("Logged into Instagram")
         print("Logged into Instagram.")
+
+        # Add a wait to ensure the post creation page loads
+        wait.until(EC.presence_of_element_located((By.XPATH, "//input[@type='file']")))
 
         driver.get("https://www.instagram.com/create/style/")
         logger.info("Opened Instagram post page")
         print("Opened Instagram post page.")
 
-        driver.find_element(By.XPATH, "//input[@type='file']").send_keys(image_url)
+        upload_input = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@type='file']")))
+        upload_input.send_keys(image_url)
         logger.info(f"Uploaded image: {image_url}")
         print(f"Uploaded image: {image_url}")
 
-        driver.find_element(By.XPATH, "//textarea[@aria-label='Write a caption…']").send_keys(caption)
+        caption_field = wait.until(EC.presence_of_element_located((By.XPATH, "//textarea[@aria-label='Write a caption…']")))
+        caption_field.send_keys(caption)
         print(f"Entered caption: {caption}")
-        driver.find_element(By.XPATH, "//button[contains(text(), 'Share')]").click()
+
+        share_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Share')]")))
+        share_button.click()
         logger.info("Posted to Instagram")
         print("Posted to Instagram.")
 
