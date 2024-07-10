@@ -11,6 +11,7 @@ from datetime import datetime
 
 # Load environment variables
 load_dotenv()
+print("Environment variables loaded.")
 
 # Setup logging
 logging.basicConfig(filename='bot.log', level=logging.INFO)
@@ -25,18 +26,23 @@ def get_random_image():
     }
     try:
         response = requests.get(url, params=params)
+        print(f"Requested image from Unsplash. Status code: {response.status_code}")
         response.raise_for_status()  # Check for HTTP errors
         data = response.json()
+        print(f"Response from Unsplash: {data}")
         if not data:
             raise Exception("No images found or invalid response from Unsplash API")
         image_url = data[0]['urls']['regular']
         logger.info(f'Fetched image URL: {image_url}')
+        print(f"Fetched image URL: {image_url}")
         return image_url
     except requests.exceptions.RequestException as e:
         logger.error(f'Failed to fetch image from Unsplash API: {e}')
+        print(f"Failed to fetch image from Unsplash API: {e}")
         raise
     except Exception as e:
         logger.error(f'Error in get_random_image function: {e}')
+        print(f"Error in get_random_image function: {e}")
         raise
 
 def post_to_instagram(image_url, caption):
@@ -47,30 +53,43 @@ def post_to_instagram(image_url, caption):
 
     try:
         service = ChromeService(executable_path=ChromeDriverManager().install())
+        print("ChromeDriver installed.")
         driver = webdriver.Chrome(service=service, options=chrome_options)
+        print("WebDriver initialized.")
         driver.get("https://www.instagram.com/accounts/login/")
         logger.info("Opened Instagram login page")
+        print("Opened Instagram login page.")
 
         driver.find_element(By.NAME, 'username').send_keys(os.getenv('INSTAGRAM_USERNAME'))
+        print(f"Entered username: {os.getenv('INSTAGRAM_USERNAME')}")
         driver.find_element(By.NAME, 'password').send_keys(os.getenv('INSTAGRAM_PASSWORD'))
+        print(f"Entered password: {os.getenv('INSTAGRAM_PASSWORD')}")
         driver.find_element(By.XPATH, "//button[contains(text(), 'Log In')]").click()
         logger.info("Logged into Instagram")
+        print("Logged into Instagram.")
 
         driver.get("https://www.instagram.com/create/style/")
         logger.info("Opened Instagram post page")
+        print("Opened Instagram post page.")
 
         driver.find_element(By.XPATH, "//input[@type='file']").send_keys(image_url)
         logger.info(f"Uploaded image: {image_url}")
+        print(f"Uploaded image: {image_url}")
 
         driver.find_element(By.XPATH, "//textarea[@aria-label='Write a caption…']").send_keys(caption)
+        print(f"Entered caption: {caption}")
         driver.find_element(By.XPATH, "//button[contains(text(), 'Share')]").click()
         logger.info("Posted to Instagram")
+        print("Posted to Instagram.")
 
         driver.quit()
+        print("WebDriver closed.")
     except Exception as e:
         logger.error(f'Error in post_to_instagram function: {e}')
+        print(f'Error in post_to_instagram function: {e}')
         if 'driver' in locals():
             driver.quit()
+            print("WebDriver closed due to error.")
         raise
 
 def main():
@@ -79,8 +98,10 @@ def main():
         caption = "Time and Hard Work: The Key to Success! 💪 #Motivation #HardWork #Success #Dedication #Inspiration #StayStrong"
         post_to_instagram(image_url, caption)
         logger.info(f'Posted image at {datetime.now()}')
+        print(f'Posted image at {datetime.now()}')
     except Exception as e:
         logger.error(f'Error in main function: {e}')
+        print(f'Error in main function: {e}')
 
 if __name__ == "__main__":
     main()
