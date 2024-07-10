@@ -100,6 +100,12 @@ def post_to_instagram(image_url, caption):
 
         driver.quit()
         print("WebDriver closed.")
+    except NoSuchElementException as e:
+        logger.error(f'Element not found: {e}')
+        print(f'Element not found: {e}')
+    except TimeoutException as e:
+        logger.error(f'Timeout waiting for element: {e}')
+        print(f'Timeout waiting for element: {e}')
     except Exception as e:
         logger.error(f'Error in post_to_instagram function: {e}')
         print(f'Error in post_to_instagram function: {e}')
@@ -107,6 +113,7 @@ def post_to_instagram(image_url, caption):
             driver.quit()
             print("WebDriver closed due to error.")
         raise
+
 
 def main():
     try:
