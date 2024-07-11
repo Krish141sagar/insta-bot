@@ -17,13 +17,17 @@ logger = logging.getLogger(__name__)
 def get_random_image():
     access_key = os.getenv('UNSPLASH_ACCESS_KEY')
     url = f"https://api.unsplash.com/photos/random?client_id={access_key}&query=motivational"
+    logger.info(f"Fetching image from Unsplash API: {url}")
+    
     response = requests.get(url)
     logger.info(f"Unsplash API response status: {response.status_code}")
+    logger.info(f"Unsplash API response content: {response.content}")
+    
     if response.status_code == 200:
         data = response.json()
         logger.info(f"Unsplash API response data: {data}")
         if data:
-            return data[0]['urls']['regular']
+            return data['urls']['regular'] if isinstance(data, dict) else data[0]['urls']['regular']
         else:
             raise Exception("No images found or invalid response from Unsplash API")
     else:
