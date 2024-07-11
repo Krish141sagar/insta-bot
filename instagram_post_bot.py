@@ -29,7 +29,7 @@ def post_to_instagram(image_url, caption):
         driver.get("https://www.instagram.com/accounts/login/")
         logger.info("Opened Instagram login page")
 
-        wait = WebDriverWait(driver, 30)  # Increased wait time to 30 seconds
+        wait = WebDriverWait(driver, 60)  # Increased wait time to 60 seconds
 
         try:
             username_field = wait.until(EC.presence_of_element_located((By.NAME, 'username')))
@@ -61,52 +61,4 @@ def post_to_instagram(image_url, caption):
         logger.info("Opened Instagram post page.")
 
         try:
-            upload_input = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@type='file']")))
-            upload_input.send_keys(image_url)
-            logger.info(f"Uploaded image: {image_url}")
-        except TimeoutException:
-            logger.error("Timeout while waiting for the file input")
-            driver.save_screenshot('debug_screenshot.png')
-            logger.info("Saved screenshot for debugging")
-            return
-
-        try:
-            caption_field = wait.until(EC.presence_of_element_located((By.XPATH, "//textarea[@aria-label='Write a caption…']")))
-            caption_field.send_keys(caption)
-            logger.info(f"Entered caption: {caption}")
-        except TimeoutException:
-            logger.error("Timeout while waiting for the caption field")
-            return
-
-        try:
-            share_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Share')]")))
-            share_button.click()
-            logger.info("Posted to Instagram.")
-        except TimeoutException:
-            logger.error("Timeout while waiting for the share button")
-            return
-
-        driver.quit()
-        logger.info("WebDriver closed.")
-    except NoSuchElementException as e:
-        logger.error(f'Element not found: {e}')
-        if 'driver' in locals():
-            driver.quit()
-    except TimeoutException as e:
-        logger.error(f'Timeout waiting for element: {e}')
-        if 'driver' in locals():
-            driver.quit()
-    except Exception as e:
-        logger.error(f'Error in post_to_instagram function: {e}')
-        if 'driver' in locals():
-            driver.quit()
-        raise
-
-def main():
-    image_url = "/path/to/your/image.jpg"  # Replace with your local image path
-    caption = "This is a test caption."  # Replace with your desired caption
-    post_to_instagram(image_url, caption)
-    logger.info(f"Posted image at {datetime.now()}")
-
-if __name__ == "__main__":
-    main()
+            upload_input = wait.until(EC.presence_of_eleme
