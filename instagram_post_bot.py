@@ -1,112 +1,117 @@
 import os
+import requests
 import time
 import logging
-from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.common.exceptions import NoSuchElementException
 
-# Initialize logging
+# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def get_random_image():
+    access_key = os.getenv('UNSPLASH_ACCESS_KEY')
+    url = f"https://api.unsplash.com/photos/random?client_id={access_key}&query=motivational"
+    response = requests.get(url)
+    logger.info(f"Unsplash API response status: {response.status_code}")
+    if response.status_code == 200:
+        data = response.json()
+        logger.info(f"Unsplash API response data: {data}")
+        if data:
+            return data[0]['urls']['regular']
+        else:
+            raise Exception("No images found or invalid response from Unsplash API")
+    else:
+        raise Exception("Failed to fetch image from Unsplash API")
+
 def post_to_instagram(image_url, caption):
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
 
     try:
-        service = ChromeService(executable_path=ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=service, options=chrome_options)
-        logger.info("WebDriver initialized.")
+        driver.get('https://www.instagram.com/accounts/login/')
+        wait = WebDriverWait(driver, 30)
+        
+        logger.info("Waiting for username field...")
+        username_field = wait.until(EC.presence_of_element_located((By.NAME, "username")))
+        username_field.send_keys(os.getenv('INSTAGRAM_USERNAME'))
 
-        driver.get("https://www.instagram.com/accounts/login/")
-        logger.info("Opened Instagram login page")
+        logger.info("Waiting for password field...")
+        password_field = wait.until(EC.presence_of_element_located((By.NAME, "password")))
+        password_field.send_keys(os.getenv('INSTAGRAM_PASSWORD'))
 
-        wait = WebDriverWait(driver, 60)  # Increased wait time to 60 seconds
+        logger.info("Submitting login form...")
+        login_button = wait.until(EC.element_to_be_clickable((By.XPATH, '//button[@type="submit"]')))
+        login_button.click()
+
+        logger.info("Logged into Instagram.")
+
+        time.sleep(5)  # Adjust sleep time as needed to wait for login to complete
+
+        # Check for not now buttons and dismiss them
+        try:
+            not_now_button = wait.until(EC.element_to_be_clickable((By.XPATH, '//button[contains(text(), "Not Now")]')))
+            not_now_button.click()
+            logger.info("Clicked 'Not Now' on save login info prompt.")
+        except NoSuchElementException:
+            pass
 
         try:
-            username_field = wait.until(EC.presence_of_element_located((By.NAME, 'username')))
-            username_field.send_keys(os.getenv('INSTAGRAM_USERNAME'))
-            logger.info(f"Entered username: {os.getenv('INSTAGRAM_USERNAME')}")
-        except TimeoutException:
-            logger.error("Timeout while waiting for the username field")
-            return
+            not_now_button = wait.until(EC.element_to_be_clickable((By.XPATH, '//button[contains(text(), "Not Now")]')))
+            not_now_button.click()
+            logger.info("Clicked 'Not Now' on turn on notifications prompt.")
+        except NoSuchElementException:
+            pass
 
-        try:
-            password_field = wait.until(EC.presence_of_element_located((By.NAME, 'password')))
-            password_field.send_keys(os.getenv('INSTAGRAM_PASSWORD'))
-            logger.info("Entered password.")
-        except TimeoutException:
-            logger.error("Timeout while waiting for the password field")
-            return
+        # Simulate image upload
+        driver.get('https://www.instagram.com/')
+        new_post_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '[aria-label="New Post"]')))
+        new_post_button.click()
 
-        try:
-            login_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@type='submit']")))
-            login_button.click()
-            logger.info("Logged into Instagram.")
-        except TimeoutException:
-            logger.error("Timeout while waiting for the login button")
-            return
+        logger.info("Clicked on new post button.")
 
-        # Wait for the page to load after login
-        time.sleep(10)  # Static wait for the page to load; adjust as needed
-        driver.get("https://www.instagram.com/create/style/")
-        logger.info("Opened Instagram post page.")
+        upload_input = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input[type="file"]')))
+        upload_input.send_keys(os.path.abspath("local_path_to_your_image.jpg"))
 
-        try:
-            upload_input = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@type='file']")))
-            upload_input.send_keys(image_url)
-            logger.info(f"Uploaded image: {image_url}")
-        except TimeoutException:
-            logger.error("Timeout while waiting for the file input")
-            driver.save_screenshot('debug_screenshot.png')
-            logger.info("Saved screenshot for debugging")
-            return
+        logger.info("Uploaded image.")
 
-        try:
-            caption_field = wait.until(EC.presence_of_element_located((By.XPATH, "//textarea[@aria-label='Write a caption…']")))
-            caption_field.send_keys(caption)
-            logger.info(f"Entered caption: {caption}")
-        except TimeoutException:
-            logger.error("Timeout while waiting for the caption field")
-            return
+        # Add a caption
+        caption_field = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[aria-label="Write a caption…"]')))
+        caption_field.send_keys(caption)
 
-        try:
-            share_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Share')]")))
-            share_button.click()
-            logger.info("Posted to Instagram.")
-        except TimeoutException:
-            logger.error("Timeout while waiting for the share button")
-            return
+        logger.info("Added caption.")
 
+        share_button = wait.until(EC.element_to_be_clickable((By.XPATH, '//button[contains(text(), "Share")]')))
+        share_button.click()
+
+        logger.info(f"Posted image at {time.strftime('%Y-%m-%d %H:%M:%S')}")
+
+    except Exception as e:
+        logger.error(f"Error in post_to_instagram function: {e}")
+        driver.save_screenshot('debug_screenshot.png')
+        logger.info("Saved screenshot for debugging.")
+    finally:
         driver.quit()
         logger.info("WebDriver closed.")
-    except NoSuchElementException as e:
-        logger.error(f'Element not found: {e}')
-        if 'driver' in locals():
-            driver.quit()
-    except TimeoutException as e:
-        logger.error(f'Timeout waiting for element: {e}')
-        if 'driver' in locals():
-            driver.quit()
-    except Exception as e:
-        logger.error(f'Error in post_to_instagram function: {e}')
-        if 'driver' in locals():
-            driver.quit()
-        raise
 
 def main():
-    image_url = "/path/to/your/image.jpg"  # Replace with your local image path
-    caption = "This is a test caption."  # Replace with your desired caption
+    logger.info("Starting Instagram bot...")
+    
+    logger.info(f"INSTAGRAM_USERNAME: {os.getenv('INSTAGRAM_USERNAME')}")
+    logger.info(f"INSTAGRAM_PASSWORD: {os.getenv('INSTAGRAM_PASSWORD')}")
+    logger.info(f"UNSPLASH_ACCESS_KEY: {os.getenv('UNSPLASH_ACCESS_KEY')}")
+
+    image_url = get_random_image()
+    caption = "Stay motivated! #motivation #inspiration #hardwork #success #goals"
     post_to_instagram(image_url, caption)
-    logger.info(f"Posted image at {datetime.now()}")
 
 if __name__ == "__main__":
     main()
