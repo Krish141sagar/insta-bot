@@ -13,25 +13,29 @@ from selenium.common.exceptions import NoSuchElementException
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 def get_random_image():
-    access_key = os.getenv('UNSPLASH_ACCESS_KEY')
-    url = f"https://api.unsplash.com/photos/random?client_id={access_key}&query=motivational"
-    logger.info(f"Fetching image from Unsplash API: {url}")
-    
-    response = requests.get(url)
-    logger.info(f"Unsplash API response status: {response.status_code}")
-    logger.info(f"Unsplash API response content: {response.content}")
-    
-    if response.status_code == 200:
+    url = "https://api.unsplash.com/photos/random"
+    params = {
+        'client_id': os.getenv('UNSPLASH_ACCESS_KEY'),
+        'query': 'motivational',
+        'count': 1  # Request one image
+    }
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()  # Check for HTTP errors
         data = response.json()
-        logger.info(f"Unsplash API response data: {data}")
-        if data:
-            return data['urls']['regular'] if isinstance(data, dict) else data[0]['urls']['regular']
-        else:
+        if not data:
             raise Exception("No images found or invalid response from Unsplash API")
-    else:
-        raise Exception("Failed to fetch image from Unsplash API")
+        image_url = data[0]['urls']['regular']
+        logger.info(f'Fetched image URL: {image_url}')
+        return image_url
+    except requests.exceptions.RequestException as e:
+        logger.error(f'Failed to fetch image from Unsplash API: {e}')
+        raise
+    except Exception as e:
+        logger.error(f'Error in get_random_image function: {e}')
+        raise
+
 
 def post_to_instagram(image_url, caption):
     options = webdriver.ChromeOptions()
