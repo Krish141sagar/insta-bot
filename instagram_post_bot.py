@@ -29,9 +29,4 @@ def post_to_instagram(image_url, caption):
         driver.get("https://www.instagram.com/accounts/login/")
         logger.info("Opened Instagram login page")
 
-        wait = WebDriverWait(driver, 30)  # Increased wait time to 30 seconds
-
-        try:
-            username_field = wait.until(EC.presence_of_element_located((By.NAME, 'username')))
-            username_field.send_keys(os.getenv('INSTAGRAM_USERNAME'))
-        
+        wait = WebDriverWait(driver, 30)  # Increased
