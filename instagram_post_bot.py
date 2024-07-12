@@ -112,12 +112,4 @@ def main():
     try:
         image_url = get_random_image()
         caption = "Time and Hard Work: The Key to Success! 💪 #Motivation #HardWork #Success #Dedication #Inspiration #StayStrong"
-        post_to_instagram(image_url, caption)
-        logger.info(f'Posted image at {datetime.now()}')
-        print(f'Posted image at {datetime.now()}')
-    except Exception as e:
-        logger.error(f'Error in main function: {e}')
-        print(f'Error in main function: {e}')
-
-if __name__ == "__main__":
-    main()
+        post_to_instagram(image_url
