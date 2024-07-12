@@ -25,18 +25,19 @@ jobs:
         with:
           python-version: '3.x'
 
+      
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Run Instagram Bot
         run: |
           python instagram_post_bot.py
-        continue-on-error: true
 
-      - name: Upload screenshot if exists
+      - name: Upload debug screenshot
         if: failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-          name: debug-screenshot
+          name: debug_screenshot
           path: debug_screenshot.png
