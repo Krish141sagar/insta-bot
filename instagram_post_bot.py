@@ -15,6 +15,12 @@ from datetime import datetime
 load_dotenv()
 print("Environment variables loaded.")
 
+# Explicit wait example for file input
+file_input = WebDriverWait(driver, 20).until(
+    EC.presence_of_element_located((By.XPATH, "//input[@type='file']"))
+)
+file_input.send_keys(image_url)
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
