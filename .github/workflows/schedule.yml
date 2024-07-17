@@ -1,43 +1,42 @@
-name: Run Instagram Bot
-
-
-env:
-      INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
-      INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
-      UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+name: Instagram Bot
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.12
 
-      
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
 
-      - name: Run Instagram Bot
-        run: |
-          python instagram_post_bot.py
+    - name: Run Instagram bot script
+      env:
+        INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
+        INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
+        UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+      run: |
+        python instagram_post_bot.py
 
-      - name: Upload debug screenshot
-        if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: debug_screenshot
-          path: debug_screenshot.png
+    - name: Upload screenshot artifacts
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: screenshots
+        path: |
+          post_page.png
+          image_uploaded.png
+        retention-days: 7  # Optional: How many days to keep the artifact
