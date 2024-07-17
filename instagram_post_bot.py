@@ -94,6 +94,9 @@ def post_to_instagram(image_url, caption):
         # Capture a screenshot to verify page state
         driver.save_screenshot('post_page.png')
         logger.info("Captured screenshot of the post page")
+        print("Current working directory:", os.getcwd())
+        print("Saving screenshot to:", os.path.join(os.getcwd(), 'post_page.png'))
+        print("Screenshot saved as post_page.png")
 
         # Wait for the file input to be present
         upload_input = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@type='file']")))
