@@ -85,12 +85,13 @@ def post_to_instagram(image_url, caption):
         print("Logged into Instagram.")
 
         # Wait for the home page to load by waiting for the profile icon
-        wait.until(EC.presence_of_element_located((By.XPATH, "//span[@aria-label='Profile']")))
+        profile_icon = wait.until(EC.presence_of_element_located((By.XPATH, "//span[@aria-label='Profile']")))
 
         driver.get("https://www.instagram.com/create/style/")
         logger.info("Opened Instagram post page")
         print("Opened Instagram post page.")
 
+        # Wait for the file input to be present
         upload_input = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@type='file']")))
         upload_input.send_keys(image_url)
         logger.info(f"Uploaded image: {image_url}")
