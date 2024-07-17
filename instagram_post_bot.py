@@ -69,7 +69,7 @@ def post_to_instagram(image_url, caption):
         logger.info("Opened Instagram login page")
         print("Opened Instagram login page.")
 
-        wait = WebDriverWait(driver, 15)  # Wait up to 15 seconds for elements to appear
+        wait = WebDriverWait(driver, 30)  # Wait up to 30 seconds for elements to appear
 
         username_field = wait.until(EC.presence_of_element_located((By.NAME, 'username')))
         username_field.send_keys(os.getenv('INSTAGRAM_USERNAME'))
@@ -91,11 +91,19 @@ def post_to_instagram(image_url, caption):
         logger.info("Opened Instagram post page")
         print("Opened Instagram post page.")
 
+        # Capture a screenshot to verify page state
+        driver.save_screenshot('post_page.png')
+        logger.info("Captured screenshot of the post page")
+
         # Wait for the file input to be present
         upload_input = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@type='file']")))
         upload_input.send_keys(image_url)
         logger.info(f"Uploaded image: {image_url}")
         print(f"Uploaded image: {image_url}")
+
+        # Capture a screenshot to verify the image upload
+        driver.save_screenshot('image_uploaded.png')
+        logger.info("Captured screenshot after image upload")
 
         caption_field = wait.until(EC.presence_of_element_located((By.XPATH, "//textarea[@aria-label='Write a caption…']")))
         caption_field.send_keys(caption)
