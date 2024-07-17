@@ -30,9 +30,10 @@ jobs:
         UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
       run: |
         python instagram_post_bot.py
+      continue-on-error: true  # Ensure the workflow continues even if this step fails
 
     - name: Upload screenshot artifacts
-      if: failure()
+      if: always()  # Ensure this step runs regardless of previous steps' outcomes
       uses: actions/upload-artifact@v3
       with:
         name: screenshots
